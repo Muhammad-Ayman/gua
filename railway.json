@@ -1,0 +1,12 @@
+{
+    "build": {
+      "builder": "RAILPACK",
+      "buildCommand": "docker build -t guacamole-all-in-one .",
+      "startCommand": "docker run -p 8080:8080 --name guacamole-instance guacamole-all-in-one"
+    },
+    "deploy": {
+      "startCommand": "docker run -d -p 8080:8080 --name guacamole-instance guacamole-all-in-one",
+      "healthcheckPath": "/guacamole"
+    }
+  }
+  
