@@ -16,18 +16,6 @@ RUN curl -L https://dl.apache.org/guacamole/1.6.0/binary/guacamole-auth-jdbc-pos
 # Expose the database and Tomcat ports
 EXPOSE 5432 8080
 
-# The rest of the Dockerfile will add the database and startup scripts.
-# For simplicity, we can use a second stage or scripts to set this up.
-# Since a single container is not the recommended approach, this example
-# demonstrates the concept of using Supervisor to manage the components.
-
-# Use a multi-stage build to include the database or use a supervisor.
-# For this simplified single-Dockerfile, we'll embed the setup.
-
-# Copy database schema to initialize PostgreSQL
-COPY --from=guacamole/guacamole:1.6.0 /opt/guacamole/bin/initdb.sh /initdb.sh
-RUN /initdb.sh --postgresql > /docker-entrypoint-initdb.d/initdb.sql
-
 # Use the official PostgreSQL image as a multi-stage build to get the database setup
 FROM postgres:16 AS postgres-setup
 COPY --from=0 /docker-entrypoint-initdb.d/initdb.sql /docker-entrypoint-initdb.d/
@@ -46,8 +34,8 @@ RUN mkdir /etc/guacamole/extensions
 COPY --from=guacamole/guacamole:1.6.0 /opt/guacamole/extensions /etc/guacamole/extensions
 COPY --from=guacamole/guacamole:1.6.0 /usr/local/tomcat/webapps/guacamole.war /var/lib/tomcat9/webapps/
 
-# Copy the guacd executable
-COPY --from=guacamole/guacd:1.6.0 /usr/local/sbin/guacd /usr/sbin/guacd
+# Copy the guacd executable from the correct path
+COPY --from=guacamole/guacd:1.6.0 /opt/guacamole/sbin/guacd /usr/sbin/guacd
 
 # Add supervisord configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
